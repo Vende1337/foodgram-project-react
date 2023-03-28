@@ -9,31 +9,7 @@ from rest_framework.response import Response
 
 from users.models import User
 
-from recipes.models import Tag, Ingredient, Recipe, RecipeinIngred, Follow, Purchase
-
-
-class RegisterSerializer(serializers.ModelSerializer):
-    """
-    (Де-)Сериализатор для модели User приложения users.
-    Регистрация пользователей.
-    """
-
-    class Meta:
-        model = User
-        fields = ['email', 'username', 'first_name', 'last_name', 'password', ]
-
-    def validate(self, data):
-        if 'me' == data['username']:
-            raise serializers.ValidationError(
-                'Нельзя создать пользователя с username "me" ')
-        return data
-
-
-class ProfileSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ['id', ]
+from recipes.models import Tag, Ingredient, Recipe, RecipeinIngred, Follow, Purchase, Favorite
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -52,7 +28,7 @@ class SelfUserSerializer(serializers.ModelSerializer):
                   'last_name', 'id', 'is_subcribed', ]
 
     def get_is_subcribed(self, user):
-        self_user = self.context.get('request').user
+        self_user = self.context.get('request').user.id
         if self_user == user:
             return False
         if Follow.objects.filter(user=self_user, author=user).exists():
@@ -82,19 +58,6 @@ class GetIngresientSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'unit', ]
 
 
-class IngredientSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all()
-    )
-
-    amount = serializers.IntegerField()
-
-    class Meta:
-        model = Ingredient
-        fields = ['id', 'amount', 'name', 'unit']
-        read_only_fields = ('name', 'unit',)
-
-
 class Recipeingred(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(), source='ingredients'
@@ -119,9 +82,7 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ['id',
-                  'name','image', 'cooking_time']
-        
- 
+                  'name', 'image', 'cooking_time']
 
 
 class GetRecipeIngred(serializers.ModelSerializer):
@@ -158,10 +119,26 @@ class GetRecipeSerializer(serializers.ModelSerializer):
 
     tags = GetTagSerializer(many=True, read_only=True)
 
+    is_favorited = serializers.SerializerMethodField()
+
+    is_in_shopping_cart = serializers.SerializerMethodField()
+
     class Meta:
         model = Recipe
         fields = ['id', 'author', 'image', 'ingredients', 'tags',
-                  'name', 'text', 'cooking_time', ]
+                  'name', 'text', 'cooking_time', 'is_favorited', 'is_in_shopping_cart']
+
+    def get_is_favorited(self, recipe):
+        self_user = self.context.get('request').user.id
+        if Favorite.objects.filter(user=self_user, recipe=recipe).exists():
+            return True
+        return False
+
+    def get_is_in_shopping_cart(self, recipe):
+        self_user = self.context.get('request').user.id
+        if Purchase.objects.filter(user=self_user, recipe=recipe).exists():
+            return True
+        return False
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -223,12 +200,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         return res.data
 
 
-class FavoriteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Recipe
-        fields = ['id', ]
-
-
 class FallowSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -248,7 +219,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                   'last_name', 'id', 'is_subcribed', 'recipes', 'recipes_count']
 
     def get_is_subcribed(self, user):
-        self_user = self.context.get('request').user
+        self_user = self.context.get('request').user.id
         if self_user == user:
             return False
         if Follow.objects.filter(user=self_user, author=user).exists():
@@ -270,8 +241,3 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             count += 1
 
         return count
-
-
-#class RecipePurchaseSerializer(serializers.ModelSerializer):
-
-    

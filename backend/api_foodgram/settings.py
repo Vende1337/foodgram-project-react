@@ -1,5 +1,8 @@
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from pathlib import Path
 
@@ -16,7 +19,7 @@ SECRET_KEY = 'django-insecure-4-wqmsq*wqpk=abr4gwfl^^ycm(0mczhq4+6628!st50r^%*i=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -33,7 +36,9 @@ INSTALLED_APPS = [
     'recipes',
     'rest_framework',
     'api_foodgram',
+    'djoser',
     'colorfield',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -48,10 +53,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'api_foodgram.urls'
 
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [TEMPLATES_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -64,6 +70,7 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'api_foodgram.wsgi.application'
 
 
@@ -72,8 +79,12 @@ WSGI_APPLICATION = 'api_foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT')
     }
 }
 
@@ -96,6 +107,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
@@ -116,6 +132,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
@@ -130,19 +149,20 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated', 
+        'rest_framework.permissions.IsAuthenticated',
     ],
 
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
-} 
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
-    'AUTH_HEADER_TYPES': ('Bearer',),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',)
 }
+
+
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
 
 EMAIL_ADMIN = 'admin@gmail.com'
 
-REFRESH_TOKEN_LIFETIME= 999999
+REFRESH_TOKEN_LIFETIME = 999999
+
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1', 'https://',]

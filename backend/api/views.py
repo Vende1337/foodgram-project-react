@@ -14,17 +14,17 @@ from django.contrib.auth.tokens import default_token_generator
 from rest_framework_simplejwt.tokens import RefreshToken
 import json
 from rest_framework.parsers import FileUploadParser
-from .serializers import SelfUserSerializer, UserSerializer, RegisterSerializer, SetPassSerializer, TokenSerializer, GetTagSerializer, RecipeSerializer, FavoriteSerializer, FallowSerializer, GetIngresientSerializer, GetRecipeSerializer, SubscriptionSerializer, ShortRecipeSerializer
+from .serializers import SelfUserSerializer, UserSerializer, SetPassSerializer, TokenSerializer, GetTagSerializer, RecipeSerializer, FallowSerializer, GetIngresientSerializer, GetRecipeSerializer, SubscriptionSerializer, ShortRecipeSerializer
 from users.models import User
 from recipes.models import Tag, Recipe, Favorite, Ingredient, Follow, Purchase, RecipeinIngred
-from .permissions import IsAdminOrReadOnly, UserPermission
+from .permissions import IsAdminOrReadOnly, UserPermission,IsReviewAndComment
 from.mixins import CreateDestroyViewSet
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     search_fields = ('=username',)
-    permission_classes = (UserPermission,)
+    permission_classes = (permissions.AllowAny,)
 
     def get_serializer_class(self):
         if self.request.user.is_staff:
@@ -49,37 +49,15 @@ class SetPasswordViewSet(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, serializer):
+        user = self.request.user
         new_pass = serializer.data.get('new_password')
         cur_pass = serializer.data.get('current_password')
-        if serializer.data == {}:
-            return Response({'error': 'Запрос без параметров'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        if new_pass == cur_pass:
-            return Response({'error': 'Новый пароль должен отличаться от текущего пароля'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        user = self.request.user
-        if cur_pass != user.password:
-            return Response({'error': 'Вы ввели неверный текущий пароль'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        user.password = new_pass
+        if not user.check_password(cur_pass):
+            return Response({'error': 'Вы ввели неверный текущий пароль'}, status=status.HTTP_400_BAD_REQUEST)
+        user.set_password(new_pass)
         user.save()
-        return Response(user.password, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_200_OK)
 
-
-class CustomAuthToken(generics.GenericAPIView):
-    serializer_class = TokenSerializer
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, serializer):
-        if serializer.data == {}:
-            return Response({'error': 'Запрос без параметров'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        user = get_object_or_404(
-            User, email=serializer.data.get('email'))
-        refresh = RefreshToken.for_user(user)
-
-        return Response({'auth_token': str(refresh.access_token)},
-                        status=status.HTTP_200_OK)
 
 
 class TagsViewSet(viewsets.ModelViewSet):
@@ -91,7 +69,7 @@ class TagsViewSet(viewsets.ModelViewSet):
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     # serializer_class = RecipeSerializer
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (IsReviewAndComment,)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -164,7 +142,7 @@ class GetFallowViewSet(generics.ListAPIView):
 class IngridientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = GetIngresientSerializer
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class FavoriteViewSet(CreateDestroyViewSet):

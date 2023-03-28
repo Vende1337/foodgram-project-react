@@ -3,7 +3,6 @@ from rest_framework import routers
 
 from .views import (
     UserViewSet,
-    CustomAuthToken,
     SetPasswordViewSet,
     TagsViewSet,
     RecipesViewSet,
@@ -27,7 +26,6 @@ router_v1.register(r'recipes/(?P<recipe_id>\d+)/favorite',
 router_v1.register('ingredients', IngridientViewSet, basename='ingredient')
 router_v1.register(r'users/(?P<user_id>\d+)/subscribe',
                    FallowViewSet, basename='subscribe')
-#router_v1.register('users/subscription', GetFallowViewSet, basename='subscribe_list')
 router_v1.register(r'recipes/(?P<recipe_id>\d+)/shopping_cart',
                    PurchaseViewSet, basename='purchase')
 
@@ -38,5 +36,5 @@ urlpatterns = [
     path('api/users/set_password', SetPasswordViewSet.as_view(), name='SetPass'),
     path('api/users/subscription',
          GetFallowViewSet.as_view(), name='subscribe_list'),
-    #path(r'users/(?P<user_id>\d+)/subscribe', FallowViewSet.as_view(), name='subscribe')
+
 ]
