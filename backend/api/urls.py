@@ -1,4 +1,8 @@
 from django.urls import include, path
+from django.conf.urls import re_path
+from djoser import views as djoser_views
+
+
 from rest_framework import routers
 
 from .views import (
@@ -18,7 +22,8 @@ from .views import (
 
 
 router_v1 = routers.DefaultRouter()
-router_v1.register('users', UserViewSet, basename='users')
+#router_v1.register('users', UserViewSet, basename='users')
+router_v1.register('users', UserViewSet, basename='user-create')
 router_v1.register('tags', TagsViewSet, basename='tags')
 router_v1.register('recipes', RecipesViewSet, basename='recipe')
 router_v1.register(r'recipes/(?P<recipe_id>\d+)/favorite',
@@ -33,8 +38,5 @@ router_v1.register(r'recipes/(?P<recipe_id>\d+)/shopping_cart',
 
 urlpatterns = [
     path('api/', include(router_v1.urls)),
-    path('api/users/set_password', SetPasswordViewSet.as_view(), name='SetPass'),
-    path('api/users/subscription',
-         GetFallowViewSet.as_view(), name='subscribe_list'),
-
+    #path('api/users/', UserViewSet, name='user-create')
 ]

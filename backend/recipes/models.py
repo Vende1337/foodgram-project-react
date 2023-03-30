@@ -3,13 +3,13 @@ from colorfield.fields import ColorField
 from users.models import User
 
 
-UNITS = [
-    ('kg', 'Кг.'),
-    ('gramm', 'Грамм'),
-]
-
-
 class Ingredient(models.Model):
+
+    UNITS = [
+        ('kg', 'Кг.'),
+        ('gramm', 'Грамм'),
+    ]
+
     name = models.CharField(
         max_length=100,
         verbose_name='Название Ингридиент',
@@ -115,18 +115,16 @@ class RecipeinIngred(models.Model):
 
 
 class Favorite(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,related_name='+',)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='favorite',)
 
     class Meta:
         unique_together = ('user', 'recipe')
 
 
 class Purchase(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,related_name='+')
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,related_name='purchase')
 
     class Meta:
         unique_together = ('user', 'recipe')
-
- 

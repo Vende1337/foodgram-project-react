@@ -5,29 +5,63 @@ from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 import webcolors
 from rest_framework.response import Response
-
+from djoser.serializers import UserCreateSerializer, UserSerializer as JSUser
 
 from users.models import User
 
 from recipes.models import Tag, Ingredient, Recipe, RecipeinIngred, Follow, Purchase, Favorite
 
 
+
+
+
+class CustomUserRegisterSerializer(UserCreateSerializer):
+    """Сериализатор для регистрации пользователей Djoiser"""
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'password', 'first_name',
+                  'last_name')
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'username', 'first_name',
                   'last_name', 'password', 'id', ]
+        
+
+class CustomUserSerializer(JSUser):
+    """Сериализатор для пользователей Djoiser"""
+    is_subscribed = serializers.SerializerMethodField(default=True)
+
+   
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'first_name', 'last_name',
+                  'is_subscribed')       
+
+
+    def get_is_subscribed(self, user):
+        self_user = self.context.get('request').user.id
+        if self_user == user:
+            return False
+        if Follow.objects.filter(user=self_user, author=user).exists():
+            return True
+        return False
+     
 
 
 class SelfUserSerializer(serializers.ModelSerializer):
-    is_subcribed = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ['email', 'username', 'first_name',
-                  'last_name', 'id', 'is_subcribed', ]
+                  'last_name', 'id', 'is_subscribed', ]
 
-    def get_is_subcribed(self, user):
+    def get_is_subscribed(self, user):
         self_user = self.context.get('request').user.id
         if self_user == user:
             return False
@@ -209,16 +243,16 @@ class FallowSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
-    is_subcribed = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ['email', 'username', 'first_name',
-                  'last_name', 'id', 'is_subcribed', 'recipes', 'recipes_count']
+                  'last_name', 'id', 'is_subscribed', 'recipes', 'recipes_count']
 
-    def get_is_subcribed(self, user):
+    def get_is_subscribed(self, user):
         self_user = self.context.get('request').user.id
         if self_user == user:
             return False
