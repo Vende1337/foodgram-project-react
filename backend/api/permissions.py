@@ -11,23 +11,14 @@ class IsAdminOrReadOnly(permissions.BasePermission):
                 and request.user.is_staff)
 
 
-class UserPermission(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-
-        return ((request.method == ('GET') or ('POST')) 
-                or request.user.is_authenticated
-                and request.user.is_staff)
-
 class IsReviewAndComment(permissions.BasePermission):
-    """Класс Permission, ограничивающий доступ к отзывам и комментам."""
+    """Класс Permission, ограничивающий доступ к рецептам."""
 
     def has_permission(self, request, view):
 
         return (request.method in permissions.SAFE_METHODS
                 or request.user.is_authenticated
                 or request.user.is_staff)
-
 
     def has_object_permission(self, request, view, obj):
 

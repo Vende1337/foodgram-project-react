@@ -1,65 +1,20 @@
-from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueTogetherValidator
-from django.shortcuts import get_object_or_404
+from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
-import webcolors
-from rest_framework.response import Response
-from djoser.serializers import UserCreateSerializer, UserSerializer as JSUser
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from users.models import User
-
 from recipes.models import Tag, Ingredient, Recipe, RecipeinIngred, Follow, Purchase, Favorite
 
 
-
-
-
-class CustomUserRegisterSerializer(UserCreateSerializer):
-    """Сериализатор для регистрации пользователей Djoiser"""
-    password = serializers.CharField(write_only=True)
-
-    class Meta:
-        model = User
-        fields = ('id', 'email', 'username', 'password', 'first_name',
-                  'last_name')
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['email', 'username', 'first_name',
-                  'last_name', 'password', 'id', ]
-        
-
-class CustomUserSerializer(JSUser):
+class CustomUserSerializer(UserSerializer):
     """Сериализатор для пользователей Djoiser"""
     is_subscribed = serializers.SerializerMethodField(default=True)
-
-   
 
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'first_name', 'last_name',
-                  'is_subscribed')       
-
-
-    def get_is_subscribed(self, user):
-        self_user = self.context.get('request').user.id
-        if self_user == user:
-            return False
-        if Follow.objects.filter(user=self_user, author=user).exists():
-            return True
-        return False
-     
-
-
-class SelfUserSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = ['email', 'username', 'first_name',
-                  'last_name', 'id', 'is_subscribed', ]
+                  'is_subscribed')
 
     def get_is_subscribed(self, user):
         self_user = self.context.get('request').user.id
@@ -70,29 +25,15 @@ class SelfUserSerializer(serializers.ModelSerializer):
         return False
 
 
-class SetPassSerializer(serializers.ModelSerializer):
-    new_password = serializers.CharField()
-    current_serializer = serializers.CharField()
-
-
-class TokenSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = [
-            'password',
-            'email',
-        ]
-
-
-class GetIngresientSerializer(serializers.ModelSerializer):
-
+class GetIngredientSerializer(serializers.ModelSerializer):
+    """Сериализатор для ингредиентов"""
     class Meta:
         model = Ingredient
         fields = ['id', 'name', 'unit', ]
 
 
-class Recipeingred(serializers.ModelSerializer):
+class RecipeIngred(serializers.ModelSerializer):
+    """Сериализатор для ингредиентов при создании рецепта"""
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(), source='ingredients'
     )
@@ -103,6 +44,7 @@ class Recipeingred(serializers.ModelSerializer):
 
 
 class GetTagSerializer(serializers.ModelSerializer):
+    """Сериализатор для тегов"""
 
     class Meta:
         model = Tag
@@ -110,6 +52,7 @@ class GetTagSerializer(serializers.ModelSerializer):
 
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
+    """Сериализатор для рецепта(короткий)"""
 
     image = Base64ImageField()
 
@@ -120,6 +63,7 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
 
 
 class GetRecipeIngred(serializers.ModelSerializer):
+    """Сериализатор для получения ингредиента в рецепте"""
 
     id = serializers.SlugRelatedField(
         read_only=True,
@@ -143,11 +87,12 @@ class GetRecipeIngred(serializers.ModelSerializer):
 
 
 class GetRecipeSerializer(serializers.ModelSerializer):
+    """Сериализатор для получения рецепта"""
 
     ingredients = GetRecipeIngred(
         many=True, read_only=True, source='ingred_in_recipe')
 
-    author = SelfUserSerializer()
+    author = CustomUserSerializer()
 
     image = Base64ImageField()
 
@@ -176,10 +121,11 @@ class GetRecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания рецепта"""
 
-    ingredients = Recipeingred(many=True)
+    ingredients = RecipeIngred(many=True)
 
-    author = SelfUserSerializer(default=serializers.CurrentUserDefault())
+    author = CustomUserSerializer(default=serializers.CurrentUserDefault())
 
     image = Base64ImageField()
 
@@ -234,15 +180,25 @@ class RecipeSerializer(serializers.ModelSerializer):
         return res.data
 
 
-class FallowSerializer(serializers.ModelSerializer):
+class FollowSerializer(serializers.ModelSerializer):
+    """Сериализатор для подписок"""
 
     class Meta:
         model = Follow
         fields = ['user', 'author']
         read_only_fields = ('user', 'author',)
 
+    def validate(self, data):
+        user, author = data.get('user'), data.get('author')
+        if Follow.objects.filter(user=user, author=author).exists():
+            raise ValidationError(
+                {'error': 'Вы уже подписаны на этого пользователя'}
+            )
+        return data
+
 
 class SubscriptionSerializer(serializers.ModelSerializer):
+    """Сериализатор для получения списка подписок"""
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
