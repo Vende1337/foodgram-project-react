@@ -7,9 +7,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from .filters import RecipeFilter
-from .serializers import CustomUserSerializer, GetTagSerializer, RecipeSerializer, FollowSerializer, GetIngredientSerializer, GetRecipeSerializer, SubscriptionSerializer, ShortRecipeSerializer
+from .serializers import UsersSerializer, GetTagSerializer, RecipeSerializer, FollowSerializer, GetIngredientSerializer, GetRecipeSerializer, SubscriptionSerializer, ShortRecipeSerializer
 from users.models import User
-from recipes.models import Tag, Recipe, Favorite, Ingredient, Follow, Purchase, RecipeinIngred
+from recipes.models import Tag, Recipe, Favorite, Ingredient, Follow, Purchase, RecipeinIngredients
 from .permissions import IsAdminOrReadOnly, IsReviewAndComment
 from .mixins import CreateDestroyViewSet
 
@@ -18,7 +18,7 @@ class UserViewSet(DJUserViewSet):
     queryset = User.objects.all()
     search_fields = ('=username',)
     permission_classes = (permissions.AllowAny,)
-    serializer_class = CustomUserSerializer
+    serializer_class = UsersSerializer
 
     @action(
         detail=False,
@@ -54,6 +54,20 @@ class RecipesViewSet(viewsets.ModelViewSet):
             return GetRecipeSerializer
         return RecipeSerializer
 
+    def create_shopping_file(self, res, recipe_in_ingredient):
+        for ingredient in recipe_in_ingredient:
+            ingredient_name = ingredient.ingredient
+            unit = ingredient.ingredient.unit
+            amount = ingredient.amount
+            if f'{ingredient_name},{unit} - ' in res:
+                cur_amount = res.get(
+                    f'{ingredient_name}, {unit} - ')
+                new_amount = int(cur_amount) + int(amount)
+                res[f'{ingredient_name}, {unit} - '] = (str(new_amount))
+            else:
+                res[f'{ingredient_name}, {unit} - '] = (
+                    str(amount))
+
     @action(
         detail=False,
         methods=['get'],
@@ -61,27 +75,16 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     )
     def download_shopping_cart(self, request):
-        recipe = Purchase.objects.filter(user=self.request.user).all()
+        recipes = Purchase.objects.filter(user=self.request.user).all()
         res = {}
-        for r in recipe:
-            recipe = r.recipe
-            rec_in_ingred = RecipeinIngred.objects.filter(recipe=r.recipe)
-            for ingred in rec_in_ingred:
-                ingredient = ingred.ingredient
-                unit = ingred.ingredient.unit
-                amount = ingred.amount
-                if f'{ingredient},{unit} - ' in res:
-                    cur_amount = res.get(
-                        f'{ingredient},{unit} - ')
-                    new_amount = int(cur_amount) + int(amount)
-                    res[f'{ingredient},{unit} - '] = (str(new_amount))
-                else:
-                    res[f'{ingredient},{unit} - '] = (
-                        str(amount))
+        for recipe in recipes:
+            rec_in_ingred = RecipeinIngredients.objects.filter(
+                recipe=recipe.recipe)
+            self.create_shopping_file(res, rec_in_ingred)
         return HttpResponse('\n'.join(f'{key + value}' for key, value in res.items()), content_type='text/plain')
 
 
-class FallowViewSet(CreateDestroyViewSet):
+class FollowViewSet(CreateDestroyViewSet):
     serializer_class = FollowSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -89,8 +92,6 @@ class FallowViewSet(CreateDestroyViewSet):
         return Follow.objects.filter(user=self.request.user)
 
     def delete(self, request, user_id):
-        print(self.kwargs)
-        print(user_id)
         follow = get_object_or_404(
             Follow, user=self.request.user, author=user_id)
         follow.delete()
@@ -105,7 +106,7 @@ class FallowViewSet(CreateDestroyViewSet):
         return Response(status=status.HTTP_201_CREATED)
 
 
-class IngridientViewSet(viewsets.ModelViewSet):
+class IngredientViewSet(viewsets.ModelViewSet):
     pagination_class = None
     queryset = Ingredient.objects.all()
     serializer_class = GetIngredientSerializer

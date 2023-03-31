@@ -1,13 +1,12 @@
 from django.contrib.admin import ModelAdmin, register
 
-from .models import Tag, Recipe, Favorite, Follow, Ingredient, RecipeinIngred, Purchase
-
+from .models import Tag, Recipe, Favorite, Follow, Ingredient, RecipeinIngredients, Purchase
 
 
 @register(Follow)
 class FollowAdmin(ModelAdmin):
-    list_display = ('name', 'unit')
-  
+    list_display = ('user', 'author')
+
 
 @register(Ingredient)
 class IngredientAdmin(ModelAdmin):
@@ -37,7 +36,7 @@ class RecipeAdmin(ModelAdmin):
     favorite.short_description = 'Кол-во добавлений в избранное'
 
 
-@register(RecipeinIngred)
+@register(RecipeinIngredients)
 class RecipeIngredientAdmin(ModelAdmin):
     list_display = ('recipe', 'ingredient', 'amount')
 

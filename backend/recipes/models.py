@@ -5,16 +5,11 @@ from users.models import User
 
 class Ingredient(models.Model):
 
-    UNITS = [
-        ('kg', 'Кг.'),
-        ('gramm', 'Грамм'),
-    ]
-
     name = models.CharField(
         max_length=100,
         verbose_name='Название Ингридиент',
     )
-    unit = models.CharField(max_length=20, choices=UNITS, default='gramm')
+    unit = models.CharField()
 
     class Meta:
         verbose_name = 'Ингридиент'
@@ -63,13 +58,6 @@ class Recipe(models.Model):
         verbose_name='Описание',
     )
 
-    ingredients = models.ManyToManyField(
-        Ingredient,
-        through='RecipeinIngred',
-        related_name='ingredients',
-        verbose_name='Ингридиент'
-    )
-
     tags = models.ManyToManyField(
         Tag,
         related_name='tags',
@@ -77,7 +65,7 @@ class Recipe(models.Model):
         verbose_name='Тег'
     )
 
-    cooking_time = models.IntegerField(
+    cooking_time = models.PositiveIntegerField(
         verbose_name='Время приготовления в минутах',
     )
 
@@ -104,18 +92,17 @@ class Follow(models.Model):
         ]
 
 
-class RecipeinIngred(models.Model):
+class RecipeinIngredients(models.Model):
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='ingred_in_recipe')
+        Recipe, on_delete=models.CASCADE, related_name='ingredient_in_recipe')
     ingredient = models.ForeignKey(
-        Ingredient, on_delete=models.CASCADE, related_name='ingredient')
-    amount = models.IntegerField(
-        verbose_name='Количество'
-    )
+        Ingredient, on_delete=models.CASCADE, related_name='+')
+    amount = models.PositiveIntegerField(verbose_name='Количество')
 
 
 class Favorite(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+',)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='+',)
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, related_name='favorite',)
 
@@ -124,7 +111,8 @@ class Favorite(models.Model):
 
 
 class Purchase(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='+')
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, related_name='purchase')
 
