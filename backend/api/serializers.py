@@ -1,3 +1,4 @@
+from django.db import transaction
 from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
@@ -126,25 +127,35 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'name', 'text', 'cooking_time', ]
 
     def create(self, validated_data):
+        ingredients_data = validated_data.pop('ingredients')
+        tags_data = validated_data.pop('tags')
 
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data)
-        RecipeinIngredients.objects.bulk_create(RecipeinIngredients(recipe=recipe, ingredient=ingredients[0].get(
-            'ingredients'), amount=ingredient.get('amount'))for ingredient in ingredients)
-        recipe.tags.set(tags)
-        recipe.save()
+        with transaction.atomic():
+            recipe = Recipe.objects.create(**validated_data)
+            RecipeinIngredients.objects.bulk_create(
+                [RecipeinIngredients(
+                    recipe=recipe,
+                    ingredient=ingredient['ingredients'],
+                    amount=ingredient['amount']
+                ) for ingredient in ingredients_data]
+            )
+            recipe.tags.set(tags_data)
+
         return recipe
 
     def update(self, instance, validated_data):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-        ingr = []
         RecipeinIngredients.objects.filter(recipe=instance).delete()
-        for ingredient in ingredients:
-            RecipeinIngredients.objects.create(recipe=instance, ingredient=ingredient.get(
-                'ingredients'), amount=ingredient.get('amount'))
-            ingr.append(ingredient.get('ingredients').id)
+        recipe_ingredients = [
+            RecipeinIngredients(
+                recipe=instance,
+                ingredient=ingredient.get('ingredients'),
+                amount=ingredient.get('amount')
+            ) for ingredient in ingredients
+        ]
+        with transaction.atomic():
+            RecipeinIngredients.objects.bulk_create(recipe_ingredients)
         instance.tags.set(tags)
         instance.name = validated_data.get('name', instance.name)
         instance.image = validated_data.get('image', instance.image)

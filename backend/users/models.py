@@ -1,40 +1,32 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.core.validators import RegexValidator
+from django.contrib.auth.validators import UnicodeUsernameValidator
 
-from users.validate import validate_username
+from users.validate import validate_username, validate_character_field
+
+MAX_LEN_NAME = 150
 
 
 class User(AbstractUser):
     username = models.CharField(
-        max_length=150,
+        max_length=MAX_LEN_NAME,
         unique=True,
-        validators=[validate_username],
+        validators=[UnicodeUsernameValidator(), validate_username],
     )
     email = models.EmailField(
         max_length=254,
         unique=True,
     )
     first_name = models.CharField(
-        max_length=150,
+        max_length=MAX_LEN_NAME,
         blank=False,
-        validators=[
-            RegexValidator(
-                r"^[а-яА-Яa-zA-Z]+$",
-                message="Имя может содержать только буквы",
-            )
-        ],
+        validators=[validate_character_field],
     )
     last_name = models.CharField(
         verbose_name="Фамилия",
-        max_length=150,
+        max_length=MAX_LEN_NAME,
         blank=False,
-        validators=[
-            RegexValidator(
-                r"^[а-яА-Яa-zA-Z]+$",
-                message="Фамилия может содержать только буквы",
-            )
-        ],
+        validators=[validate_character_field],
     )
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = (
@@ -50,5 +42,3 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-
-

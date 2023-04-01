@@ -1,15 +1,21 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 from colorfield.fields import ColorField
+
 from users.models import User
+from users.validate import validate_character_field
+
+MAX_LEN_NAME = 100
 
 
 class Ingredient(models.Model):
 
     name = models.CharField(
-        max_length=100,
+        max_length=MAX_LEN_NAME,
         verbose_name='Название Ингридиент',
+        validators=[validate_character_field],
     )
-    unit = models.CharField()
+    unit = models.CharField(max_length=75)
 
     class Meta:
         verbose_name = 'Ингридиент'
@@ -21,8 +27,9 @@ class Ingredient(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(
-        max_length=100,
+        max_length=MAX_LEN_NAME,
         verbose_name='Название Тега',
+        validators=[validate_character_field],
     )
 
     slug = models.SlugField(
@@ -48,6 +55,7 @@ class Recipe(models.Model):
     name = models.CharField(
         max_length=200,
         verbose_name='Название рецепта',
+        validators=[validate_character_field],
     )
 
     image = models.ImageField()
@@ -67,6 +75,10 @@ class Recipe(models.Model):
 
     cooking_time = models.PositiveIntegerField(
         verbose_name='Время приготовления в минутах',
+        validators=[
+            MaxValueValidator(32767),
+            MinValueValidator(1)
+        ]
     )
 
     def __str__(self):
@@ -97,7 +109,11 @@ class RecipeinIngredients(models.Model):
         Recipe, on_delete=models.CASCADE, related_name='ingredient_in_recipe')
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, related_name='+')
-    amount = models.PositiveIntegerField(verbose_name='Количество')
+    amount = models.PositiveIntegerField(verbose_name='Количество',
+                                         validators=[
+                                             MaxValueValidator(3000),
+                                             MinValueValidator(1)
+                                         ])
 
 
 class Favorite(models.Model):
