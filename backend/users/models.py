@@ -3,8 +3,7 @@ from django.db import models
 from django.contrib.auth.validators import UnicodeUsernameValidator
 
 from users.validate import validate_username, validate_character_field
-
-MAX_LEN_NAME = 150
+from api_foodgram.settings import MAX_LEN_NAME, MAX_LEN_EMAIL
 
 
 class User(AbstractUser):
@@ -14,7 +13,7 @@ class User(AbstractUser):
         validators=[UnicodeUsernameValidator(), validate_username],
     )
     email = models.EmailField(
-        max_length=254,
+        max_length=MAX_LEN_EMAIL,
         unique=True,
     )
     first_name = models.CharField(

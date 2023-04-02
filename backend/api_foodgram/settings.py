@@ -170,3 +170,9 @@ DJOSER = {
         'token_destroy': ['rest_framework.permissions.IsAuthenticated'],
     }
 }
+
+
+
+MAX_LEN_NAME = 100
+
+MAX_LEN_EMAIL = 254

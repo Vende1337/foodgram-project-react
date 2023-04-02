@@ -1,11 +1,9 @@
 from django.db import models
-from django.core.validators import MaxValueValidator, MinValueValidator
 from colorfield.fields import ColorField
 
 from users.models import User
 from users.validate import validate_character_field
-
-MAX_LEN_NAME = 100
+from api_foodgram.settings import MAX_LEN_NAME
 
 
 class Ingredient(models.Model):
@@ -73,12 +71,8 @@ class Recipe(models.Model):
         verbose_name='Тег'
     )
 
-    cooking_time = models.PositiveIntegerField(
-        verbose_name='Время приготовления в минутах',
-        validators=[
-            MaxValueValidator(32767),
-            MinValueValidator(1)
-        ]
+    cooking_time = models.PositiveSmallIntegerField(
+        verbose_name='Время приготовления в минутах'
     )
 
     def __str__(self):
@@ -109,11 +103,7 @@ class RecipeinIngredients(models.Model):
         Recipe, on_delete=models.CASCADE, related_name='ingredient_in_recipe')
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, related_name='+')
-    amount = models.PositiveIntegerField(verbose_name='Количество',
-                                         validators=[
-                                             MaxValueValidator(3000),
-                                             MinValueValidator(1)
-                                         ])
+    amount = models.PositiveSmallIntegerField(verbose_name='Количество')
 
 
 class Favorite(models.Model):
