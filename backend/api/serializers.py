@@ -1,11 +1,11 @@
 from django.db import transaction
-from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from users.models import User
-from recipes.models import Tag, Ingredient, Recipe, RecipeinIngredients, Follow, Purchase, Favorite
+from recipes.models import (Tag, Ingredient, Recipe, RecipeinIngredients,
+                            Follow, Purchase, Favorite)
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -93,8 +93,11 @@ class GetRecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ['id', 'author', 'image', 'ingredients', 'tags',
-                  'name', 'text', 'cooking_time', 'is_favorited', 'is_in_shopping_cart']
+        fields = [
+            'id', 'author', 'image', 'ingredients',
+            'tags', 'name', 'text', 'cooking_time',
+                  'is_favorited', 'is_in_shopping_cart'
+        ]
 
     def get_is_favorited(self, recipe):
         self_user = self.context.get('request').user.id
@@ -198,7 +201,8 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'username', 'first_name',
-                  'last_name', 'id', 'is_subscribed', 'recipes', 'recipes_count']
+                  'last_name', 'id', 'is_subscribed',
+                  'recipes', 'recipes_count']
 
     def get_is_subscribed(self, user):
         if self.context.get('request').user.is_authenticated:

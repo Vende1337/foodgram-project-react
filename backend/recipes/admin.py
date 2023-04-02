@@ -1,6 +1,7 @@
 from django.contrib.admin import ModelAdmin, register
 
-from .models import Tag, Recipe, Favorite, Follow, Ingredient, RecipeinIngredients, Purchase
+from .models import (Tag, Recipe, Favorite, Follow, Ingredient,
+                     RecipeinIngredients, Purchase)
 
 
 @register(Follow)
@@ -21,7 +22,7 @@ class TagAdmin(ModelAdmin):
 
 @register(Recipe)
 class RecipeAdmin(ModelAdmin):
-    list_display = ('name', 'author',  'favorite')
+    list_display = ('name', 'author', 'favorite')
     list_filter = ('name', 'author', 'tags')
     search_fields = ('name',)
     readonly_fields = ('favorite',)
