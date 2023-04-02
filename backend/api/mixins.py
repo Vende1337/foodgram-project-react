@@ -6,6 +6,7 @@ class CreateDestroyViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    """Сборный вьюсет для обработки экземпляров моделей Follow, Favorite, Purchase"""
+    """Сборный вьюсет для обработки экземпляров моделей Follow,
+      Favorite, Purchase"""
 
     pass

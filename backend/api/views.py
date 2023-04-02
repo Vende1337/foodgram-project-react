@@ -7,9 +7,14 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from .filters import RecipeFilter
-from .serializers import UsersSerializer, GetTagSerializer, RecipeSerializer, FollowSerializer, GetIngredientSerializer, GetRecipeSerializer, SubscriptionSerializer, ShortRecipeSerializer
+from .serializers import (
+    UsersSerializer, GetTagSerializer, RecipeSerializer,
+    FollowSerializer, GetIngredientSerializer, GetRecipeSerializer,
+    SubscriptionSerializer, ShortRecipeSerializer
+)
 from users.models import User
-from recipes.models import Tag, Recipe, Favorite, Ingredient, Follow, Purchase, RecipeinIngredients
+from recipes.models import (Tag, Recipe, Favorite, Ingredient,
+                            Follow, Purchase, RecipeinIngredients)
 from .permissions import IsAdminOrReadOnly, IsReviewAndComment
 from .mixins import CreateDestroyViewSet
 
@@ -81,7 +86,10 @@ class RecipesViewSet(viewsets.ModelViewSet):
             rec_in_ingred = RecipeinIngredients.objects.filter(
                 recipe=recipe.recipe)
             self.create_shopping_file(res, rec_in_ingred)
-        return HttpResponse('\n'.join(f'{key + value}' for key, value in res.items()), content_type='text/plain')
+        return HttpResponse(
+            '\n'.join(f'{key + value}' for key, value in res.items()),
+            content_type='text/plain'
+        )
 
 
 class FollowViewSet(CreateDestroyViewSet):
