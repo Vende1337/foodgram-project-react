@@ -62,15 +62,16 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def create_shopping_file(self, res, recipe_in_ingredient):
         for ingredient in recipe_in_ingredient:
             ingredient_name = ingredient.ingredient
-            measurement_unit  = ingredient.ingredient.measurement_unit 
+            measurement_unit = ingredient.ingredient.measurement_unit
             amount = ingredient.amount
-            if f'{ingredient_name},{measurement_unit } - ' in res:
+            if f'{ingredient_name},{measurement_unit} - ' in res:
                 cur_amount = res.get(
-                    f'{ingredient_name}, {measurement_unit } - ')
+                    f'{ingredient_name}, {measurement_unit} - ')
                 new_amount = int(cur_amount) + int(amount)
-                res[f'{ingredient_name}, {measurement_unit } - '] = (str(new_amount))
+                res[f'{ingredient_name}, {measurement_unit} - '] = (
+                    str(new_amount))
             else:
-                res[f'{ingredient_name}, {measurement_unit } - '] = (
+                res[f'{ingredient_name}, {measurement_unit} - '] = (
                     str(amount))
 
     @action(
