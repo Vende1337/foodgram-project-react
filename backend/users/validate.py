@@ -8,6 +8,6 @@ def validate_username(username):
 
 
 validate_character_field = RegexValidator(
-    r"^[а-яА-Яa-zA-Z]+$",
+    r"^[а-яА-Яa-zA-Z\s]+$",
     message="Поле может содержать только буквы",
 )
