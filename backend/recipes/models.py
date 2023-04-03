@@ -13,7 +13,7 @@ class Ingredient(models.Model):
         verbose_name='Название Ингридиент',
         validators=[validate_character_field],
     )
-    unit = models.CharField(max_length=75)
+    measurement_measurement_unit  = models.CharField(max_length=75)
 
     class Meta:
         verbose_name = 'Ингридиент'
