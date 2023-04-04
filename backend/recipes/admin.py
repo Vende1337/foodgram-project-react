@@ -15,6 +15,11 @@ class IngredientAdmin(ModelAdmin):
     search_fields = ('name',)
 
 
+class RecipeinIngredientsInline(admin.TabularInline):
+    model = RecipeinIngredients
+    extra = 1
+
+
 @register(Tag)
 class TagAdmin(ModelAdmin):
     list_display = ('name', 'color', 'slug')
@@ -22,6 +27,7 @@ class TagAdmin(ModelAdmin):
 
 @register(Recipe)
 class RecipeAdmin(ModelAdmin):
+    inlines = [RecipeinIngredientsInline]
     list_display = ('name', 'author', 'favorite')
     list_filter = ('name', 'author', 'tags')
     search_fields = ('name',)
