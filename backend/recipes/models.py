@@ -108,8 +108,10 @@ class RecipeinIngredients(models.Model):
         Recipe, on_delete=models.CASCADE, related_name='ingredient_in_recipe')
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, related_name='+')
-    amount = models.PositiveSmallIntegerField(verbose_name='Количество',
-                                              validators=[MinValueValidator(1)])
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество',
+        validators=[MinValueValidator(1)]
+    )
 
 
 class Favorite(models.Model):
