@@ -43,19 +43,19 @@ class RecipeAdmin(ModelAdmin):
         return obj.favorite.count()
     favorite.short_description = 'Кол-во добавлений в избранное'
 
-    def clean(self):
-        cleaned_data = super().clean()
-        if not cleaned_data.get('text'):
-            raise ValidationError('Поле "text" является обязательным')
-        if not cleaned_data.get('ingredient_in_recipe').exists():
-            raise ValidationError(
-                'Необходимо добавить как минимум один ингредиент в рецепт')
-
-    # def save_model(self, request, obj, form, change):
-    #     if obj.ingredient_in_recipe.count() < 1:
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     if not cleaned_data.get('text'):
+    #         raise ValidationError('Поле "text" является обязательным')
+    #     if not cleaned_data.get('ingredient_in_recipe').exists():
     #         raise ValidationError(
     #             'Необходимо добавить как минимум один ингредиент в рецепт')
-    #     super().save_model(request, obj, form, change)
+
+    def save_model(self, request, obj, form, change):
+        if obj < 10:
+            raise ValidationError(
+                f'Необходимо добавить как минимум один ингредиент в рецепт{print(form, 6 , obj, 5 , change, 4 , self, 3 , request)}')
+        super().save_model(request, obj, form, change)
 
 
 @register(RecipeinIngredients)
