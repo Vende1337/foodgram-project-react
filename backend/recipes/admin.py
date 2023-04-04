@@ -1,5 +1,4 @@
 from django.contrib.admin import ModelAdmin, register, TabularInline
-from django.core.exceptions import ValidationError
 
 from .models import (Tag, Recipe, Favorite, Follow, Ingredient,
                      RecipeinIngredients, Purchase)
@@ -19,6 +18,7 @@ class IngredientAdmin(ModelAdmin):
 class RecipeinIngredientsInline(TabularInline):
     model = RecipeinIngredients
     extra = 1
+    min_num = 1
 
 
 @register(Tag)
@@ -42,20 +42,6 @@ class RecipeAdmin(ModelAdmin):
     def favorite(self, obj):
         return obj.favorite.count()
     favorite.short_description = 'Кол-во добавлений в избранное'
-
-    # def clean(self):
-    #     cleaned_data = super().clean()
-    #     if not cleaned_data.get('text'):
-    #         raise ValidationError('Поле "text" является обязательным')
-    #     if not cleaned_data.get('ingredient_in_recipe').exists():
-    #         raise ValidationError(
-    #             'Необходимо добавить как минимум один ингредиент в рецепт')
-
-    def save_model(self, request, obj, form, change):
-        if not form:
-            raise ValidationError(
-                f'Необходимо добавить как минимум один ингредиент в рецепт{print(form, 6 , obj, 5 , change, 4 , self, 3)}')
-        super().save_model(request, obj, form, change)
 
 
 @register(RecipeinIngredients)
