@@ -18,13 +18,15 @@ class User(AbstractUser):
     )
     first_name = models.CharField(
         max_length=MAX_LEN_NAME,
-        blank=False,
+        blank=False
+        null=False,
         validators=[validate_character_field],
     )
     last_name = models.CharField(
         verbose_name="Фамилия",
         max_length=MAX_LEN_NAME,
         blank=False,
+        null=False,
         validators=[validate_character_field],
     )
     USERNAME_FIELD = 'email'

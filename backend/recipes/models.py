@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 from colorfield.fields import ColorField
 
 from users.models import User
@@ -12,6 +13,7 @@ class Ingredient(models.Model):
         max_length=MAX_LEN_NAME,
         verbose_name='Название Ингридиент',
         validators=[validate_character_field],
+        unique=True
     )
     measurement_unit = models.CharField(max_length=75)
 
@@ -72,7 +74,10 @@ class Recipe(models.Model):
     )
 
     cooking_time = models.PositiveSmallIntegerField(
-        verbose_name='Время приготовления в минутах'
+        verbose_name='Время приготовления в минутах',
+        validators=[
+            MinValueValidator(1)
+        ]
     )
 
     def __str__(self):
@@ -103,7 +108,8 @@ class RecipeinIngredients(models.Model):
         Recipe, on_delete=models.CASCADE, related_name='ingredient_in_recipe')
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, related_name='+')
-    amount = models.PositiveSmallIntegerField(verbose_name='Количество')
+    amount = models.PositiveSmallIntegerField(verbose_name='Количество',
+                                              validators=[MinValueValidator(1)])
 
 
 class Favorite(models.Model):
