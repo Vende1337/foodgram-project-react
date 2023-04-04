@@ -12,8 +12,7 @@ class Ingredient(models.Model):
     name = models.CharField(
         max_length=MAX_LEN_NAME,
         verbose_name='Название Ингридиент',
-        validators=[validate_character_field],
-        unique=True
+        validators=[validate_character_field]
     )
     measurement_unit = models.CharField(max_length=75)
 
@@ -56,6 +55,7 @@ class Recipe(models.Model):
         max_length=200,
         verbose_name='Название рецепта',
         validators=[validate_character_field],
+        unique=True
     )
 
     image = models.ImageField()
