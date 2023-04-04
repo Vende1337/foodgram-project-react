@@ -18,7 +18,7 @@ class User(AbstractUser):
     )
     first_name = models.CharField(
         max_length=MAX_LEN_NAME,
-        blank=False
+        blank=False,
         null=False,
         validators=[validate_character_field],
     )
