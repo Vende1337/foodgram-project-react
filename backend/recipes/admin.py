@@ -44,11 +44,6 @@ class RecipeAdmin(ModelAdmin):
     favorite.short_description = 'Кол-во добавлений в избранное'
 
 
-@register(RecipeinIngredients)
-class RecipeIngredientAdmin(ModelAdmin):
-    list_display = ('recipe', 'ingredient', 'amount')
-
-
 @register(Favorite)
 class FavoriteAdmin(ModelAdmin):
     list_display = ('recipe', 'user')
