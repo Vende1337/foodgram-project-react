@@ -62,8 +62,9 @@ class Recipe(models.Model):
 
     text = models.TextField(
         max_length=1500,
-        blank=True,
         verbose_name='Описание',
+        blank=False,
+        null=True,
     )
 
     tags = models.ManyToManyField(
