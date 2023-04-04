@@ -52,9 +52,9 @@ class RecipeAdmin(ModelAdmin):
     #             'Необходимо добавить как минимум один ингредиент в рецепт')
 
     def save_model(self, request, obj, form, change):
-        if obj < 10:
+        if not form.ingredient:
             raise ValidationError(
-                f'Необходимо добавить как минимум один ингредиент в рецепт{print(form, 6 , obj, 5 , change, 4 , self, 3 , request)}')
+                f'Необходимо добавить как минимум один ингредиент в рецепт{print(form, 6 , obj, 5 , change, 4 , self, 3)}')
         super().save_model(request, obj, form, change)
 
 
