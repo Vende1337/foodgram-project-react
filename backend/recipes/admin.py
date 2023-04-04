@@ -51,13 +51,15 @@ class RecipeAdmin(ModelAdmin):
     #         raise ValidationError(
     #             'Необходимо добавить как минимум один ингредиент в рецепт')
 
-  def save_model(self, request, obj, form, change):
+    def save_model(self, request, obj, form, change):
         if not obj.text:
             raise ValidationError("Необходимо заполнить поле 'Описание'")
         if not obj.ingredient_in_recipe.exists():
-            raise ValidationError("Необходимо добавить хотя бы один ингредиент")
+            raise ValidationError(
+                "Необходимо добавить хотя бы один ингредиент")
 
         return super().save_model(request, obj, form, change)
+
 
 @register(RecipeinIngredients)
 class RecipeIngredientAdmin(ModelAdmin):
