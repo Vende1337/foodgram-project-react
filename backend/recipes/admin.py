@@ -1,4 +1,4 @@
-from django.contrib.admin import ModelAdmin, register
+from django.contrib.admin import ModelAdmin, register, TabularInline
 
 from .models import (Tag, Recipe, Favorite, Follow, Ingredient,
                      RecipeinIngredients, Purchase)
@@ -15,7 +15,7 @@ class IngredientAdmin(ModelAdmin):
     search_fields = ('name',)
 
 
-class RecipeinIngredientsInline(admin.TabularInline):
+class RecipeinIngredientsInline(TabularInline):
     model = RecipeinIngredients
     extra = 1
 
