@@ -6,7 +6,7 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from .filters import RecipeFilter
+from .filters import RecipeFilter, IngredientFilter
 from .serializers import (
     UsersSerializer, GetTagSerializer, RecipeSerializer,
     FollowSerializer, GetIngredientSerializer, GetRecipeSerializer,
@@ -120,6 +120,8 @@ class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = GetIngredientSerializer
     permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
 
 
 class FavoriteViewSet(CreateDestroyViewSet):

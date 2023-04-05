@@ -1,6 +1,6 @@
-from django_filters import rest_framework as filters
+from django_filters import rest_framework as filters, CharFilter
 
-from recipes.models import Recipe
+from recipes.models import Recipe, Ingredient
 
 
 class RecipeFilter(filters.FilterSet):
@@ -24,3 +24,11 @@ class RecipeFilter(filters.FilterSet):
         if value and self.request.user.is_authenticated:
             return queryset.filter(purchase__user=self.request.user)
         return queryset
+
+
+class IngredientFilter(filters.FilterSet):
+    name = CharFilter(field_name='name', lookup_expr='icontains')
+
+    class Meta:
+        model = Ingredient
+        fields = ('name',)
